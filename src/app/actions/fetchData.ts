@@ -2,102 +2,78 @@
 
 import { Logger } from "@/utils/logger";
 
-const logger = new Logger("ServerAction:Todo");
+const logger = new Logger("ServerAction:Requests");
 
-export type Todo = {
+export type request = {
   id: number;
-  title: string;
-  completed: boolean;
+  prompt: string;
+  response: string;
+  cost: Number;
+  latency: Number;
+  quality: string;
 };
 
 // Simulated database data
-const MOCK_TODOS: Todo[] = [
-  { id: 1, title: "Learn Next.js", completed: false },
-  { id: 2, title: "Build a project", completed: true },
-  { id: 3, title: "Write documentation", completed: false },
+const MOCK_REQUESTS: request[] = [
+  { id: 1, prompt: "Learn Next.js", response: "Next.js is a React framework...", cost: 0.1, latency: 200, quality: "high" },
 ];
 
-export async function fetchTodos() {
+export async function fetchRequests() {
   try {
-    logger.info("fetchTodos - Started fetching todos");
+    logger.info("fetchRequests - Started fetching requests");
 
     // Simulate network delay
     await new Promise(resolve => setTimeout(resolve, 1000));
 
-    logger.info("fetchTodos - Successfully fetched todos", {
-      count: MOCK_TODOS.length,
+    logger.info("fetchRequests - Successfully fetched requests", {
+      count: MOCK_REQUESTS.length,
     });
 
-    return MOCK_TODOS;
+    return MOCK_REQUESTS;
   } catch (error) {
-    logger.error("fetchTodos - Failed to fetch todos", {
+    logger.error("fetchRequests - Failed to fetch requests", {
       error: error instanceof Error ? error.message : "Unknown error",
     });
     throw error; // Re-throw to handle at UI level
   }
 }
 
-export async function toggleTodo(id: number) {
+
+export async function createRequest(prompt: string, response: string) {
+
   try {
-    logger.info("toggleTodo - Started toggling todo", { id });
+    logger.info("createRequest - Started creating request", { prompt, response });
 
-    // Simulate network delay
-    await new Promise(resolve => setTimeout(resolve, 500));
-
-    // In a real app, this would update the database
-    const todo = MOCK_TODOS.find(todo => todo.id === id);
-    if (!todo) {
-      logger.warn("toggleTodo - Todo not found", { id });
-      throw new Error(`Todo with id ${id} not found`);
-    }
-
-    todo.completed = !todo.completed;
-
-    logger.info("toggleTodo - Successfully toggled todo", {
-      id,
-      completed: todo.completed,
-    });
-
-    return MOCK_TODOS;
-  } catch (error) {
-    logger.error("toggleTodo - Failed to toggle todo", {
-      id,
-      error: error instanceof Error ? error.message : "Unknown error",
-    });
-    throw error; // Re-throw to handle at UI level
-  }
-}
-
-export async function createTodo(title: string) {
-  try {
-    logger.info("createTodo - Started creating todo", { title });
-
-    if (!title.trim()) {
-      logger.warn("createTodo - Empty title provided");
-      throw new Error("Todo title cannot be empty");
+    if (!prompt.trim()) {
+      logger.warn("createRequest - Empty prompt provided");
+      throw new Error("Request prompt cannot be empty");
     }
 
     // Simulate network delay
     await new Promise(resolve => setTimeout(resolve, 500));
 
     // In a real app, this would create a new todo in the database
-    const newTodo: Todo = {
+    const newRequest: request = {
       id: Date.now(),
-      title,
-      completed: false,
+      prompt,
+      response: response,
+      cost: 0,
+      latency: 0,
+      quality: "low",
     };
 
-    MOCK_TODOS.push(newTodo);
+    MOCK_REQUESTS.push(newRequest);
 
-    logger.info("createTodo - Successfully created todo", {
-      id: newTodo.id,
-      title: newTodo.title,
+    logger.info("createRequest - Successfully created request", {
+      id: newRequest.id,
+      prompt: newRequest.prompt,
+      response: newRequest.response,
     });
 
-    return MOCK_TODOS;
+    return MOCK_REQUESTS;
   } catch (error) {
-    logger.error("createTodo - Failed to create todo", {
-      title,
+    logger.error("createRequest - Failed to create request", {
+      prompt,
       error: error instanceof Error ? error.message : "Unknown error",
     });
     throw error; // Re-throw to handle at UI level
