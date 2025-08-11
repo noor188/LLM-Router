@@ -20,7 +20,7 @@ An intelligent LLM Router that automatically directs user prompts to the most co
 
 ## 🔐 Environment Variables
 
-Create a `.env` file in the `AI-CUSTOMER-AGENT` directory with the following values:
+Create a `.env` file in the `LLM-Router` directory with the following values:
 
 ```env
 OPENAI_API_KEY=your_openai_api_key_here
@@ -66,7 +66,7 @@ Open your browser and go to http://localhost:3000
 
 ## 🧠 Future Improvements
 - Add customizable routing rules so users can prioritize cost, latency, or quality depending on their needs
-- Run your routing function through an evaluation set and optimize performance
+- Run routing function through an evaluation set and optimize performance
 
 
 
