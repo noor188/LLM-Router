@@ -1,8 +1,5 @@
 # LLM Router 
 
-## System Design
-<img src="https://github.com/noor188/LLM-Router/blob/main/img/System_Design.png">
-
 An intelligent LLM Router that automatically directs user prompts to the most cost-effective LLM based on task type and preference needs
 
 ## ✨ Features
@@ -17,6 +14,9 @@ An intelligent LLM Router that automatically directs user prompts to the most co
 - JavaScript  
 - REST APIs  
 - LLM (Large Language Models)
+
+## System Design
+<img src="https://github.com/noor188/LLM-Router/blob/main/img/System_Design.png">
 
 ## 🔐 Environment Variables
 
