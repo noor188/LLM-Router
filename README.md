@@ -62,7 +62,7 @@ pnpm dev
 Open your browser and go to http://localhost:3000
 
 ## Demo
-<a href="https://youtu.be/-NCpDcE0UYs"> Youtube Video</a>
+<a href="https://youtu.be/4MoRUPKu5jM?si=vQCF0fWWQEO1GOOG"> Youtube Video</a>
 
 ## 🧠 Future Improvements
 - Add customizable routing rules so users can prioritize cost, latency, or quality depending on their needs
