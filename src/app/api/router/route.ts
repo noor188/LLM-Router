@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
 import { Logger } from "@/utils/logger";
 import dotenv from "dotenv";
+import OpenAI from "openai";
 
 dotenv.config();
-import OpenAI from "openai";
 
 const logger = new Logger("API:Example");
 
@@ -11,44 +11,12 @@ const client = new OpenAI({
   apiKey: process.env.openai_api_key,
 });
 
-
-export async function GET(request: Request) {
-  try {
-    logger.info("GET /router/LLMRouter - Request started");
-
-    // Log request details
-    const url = new URL(request.url);
-    logger.debug("Request details", {
-      method: request.method,
-      path: url.pathname,
-      searchParams: Object.fromEntries(url.searchParams),
-    });
-
-    // Simulate network delay
-    await new Promise(resolve => setTimeout(resolve, 1000));
-
-    logger.info("GET /router/LLMRouter - Request completed successfully", {
-      itemCount: 0,
-    });
-
-    return NextResponse.json([]);
-  } catch (error) {
-    logger.error("GET /router/LLMRouter - Request failed", {
-      error: error instanceof Error ? error.message : "Unknown error",
-    });
-
-    return NextResponse.json(
-      { error: "Internal Server Error" },
-      { status: 500 }
-    );
-  }  
-}
-
 async function generateResponse(type: string, prompt: string){
   logger.info("Generating response", { type, prompt });
-  logger.info("prompt type", { type: (typeof type) });
+  let answer = null;
+  const startTime = Date.now();
   if(type == "coding"){
-    const code = await client.chat.completions.create({
+    answer = await client.chat.completions.create({
       model:"gpt-3.5-turbo",
       messages: [
         {
@@ -58,9 +26,8 @@ async function generateResponse(type: string, prompt: string){
       ]
 
     });
-    return code.choices[0].message.content;
   }else if(type === "general_question"){
-    const answer = await client.chat.completions.create({
+    answer = await client.chat.completions.create({
       model:"gpt-3.5-turbo",
       messages: [
         {
@@ -70,21 +37,29 @@ async function generateResponse(type: string, prompt: string){
       ]
 
     });
-    let answerText = answer.choices[0].message.content;
-    logger.info("Answer generated", { answerText });
-    return answer.choices[0].message.content;
+    
 } else if(type == "writing"){
-    const text = await client.chat.completions.create({
+     answer = await client.chat.completions.create({
       model:"gpt-3.5-turbo",
       messages: [
         {
           role: "user",
           content: prompt,
         }
-      ]
+      ],
+      max_tokens: 1024,
     });
-    return text.choices[0].message.content;
   } 
+
+  const endTime = Date.now();
+  const latency = endTime - startTime;
+  logger.info("Response generated", answer);
+  return { 
+    content: answer.choices[0].message.content,
+    tokensUsed: answer.usage.total_tokens || 0,
+    latency: latency / 1000, // convert to seconds
+    model: answer.model,
+  };
 }
 
 
@@ -97,7 +72,7 @@ export async function POST(request: Request){
 
     // process data here LLM routing logic
     const prompt = userRequest.newRequest;
-    logger.info("POST /api/router - Processing prompt", { prompt });
+    logger.info("POST /api/router - Processing prompt",  prompt);
 
     // classify the request type
     const type = await client.chat.completions.create({

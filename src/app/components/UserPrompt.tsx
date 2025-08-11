@@ -2,10 +2,8 @@
 
 import { useState } from "react";
 import { useTransition } from "react";
-import { Loader2 } from "lucide-react";
 import type { request } from "../actions/fetchData";
 import { createRequest } from "../actions/fetchData";
-import { Result } from "postcss";
 import { Logger } from "@/utils/logger";
 
 const logger = new Logger("ClientAction:UserPrompt");
@@ -18,18 +16,17 @@ type RequestsProps = {
 export function UserPrompt({ initialRequests }: RequestsProps) {
   const [requests, setRequests] = useState<request[]>(initialRequests);
   const [newRequest, setNewRequest] = useState("");
-  const [isPending, startTransition] = useTransition();
-  const [updatingRequestId, setUpdatingRequestId] = useState<number | null>(null);  
+  const [isPending, startTransition] = useTransition();  
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
 
     if (!newRequest.trim()) return;
-    let generatedResponse = "";
+    let generatedResponse;
     
 
     try{
-      // classify the request type
+      
       logger.info("Sending request to API", { newRequest }); 
 
       const response = await fetch("/api/router", {
@@ -41,16 +38,19 @@ export function UserPrompt({ initialRequests }: RequestsProps) {
     });
 
       if(!response.ok){
-      const errorText = await response.text();
-      logger.error("API Error", { status: response.status, error: errorText });
-      throw new Error(`API Error: ${response.status} - ${errorText}`);
-    }
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
 
       generatedResponse = await response.json();
       
     } catch(error){
-      console.error('Error:', error);    
-      generatedResponse = "Error processing request. Please try again.";
+      console.error('Error:', error);
+      generatedResponse = {
+        content: "Error processing request. Please try again.",
+        usage: 0,
+        latency: 0,
+        model: "error",
+      };
     }
     
     logger.info("Received response from API", { generatedResponse });
@@ -58,11 +58,12 @@ export function UserPrompt({ initialRequests }: RequestsProps) {
     const optimisticRequest = {
       id: Date.now(),
       prompt: newRequest,
-      response: generatedResponse,
-      cost: 0,
-      latency: 0,
-      quality: "unknown",
+      response: generatedResponse.content,
+      tokensUsed: generatedResponse.tokensUsed,
+      latency: generatedResponse.latency,
+      model: generatedResponse.model,
     };
+    console.log("optimisticRequest:", optimisticRequest);
 
     setRequests(prev => [...prev, optimisticRequest]);
     setNewRequest("");
@@ -70,7 +71,7 @@ export function UserPrompt({ initialRequests }: RequestsProps) {
     try {
       startTransition(async () => {
         logger.info("Creating request in the database", { optimisticRequest });
-        const updatedRequests = await createRequest(optimisticRequest.prompt, optimisticRequest.response);
+        const updatedRequests = await createRequest(optimisticRequest);
         setRequests(updatedRequests);
       });
     } catch (error) {
@@ -115,6 +116,9 @@ export function UserPrompt({ initialRequests }: RequestsProps) {
               {request.prompt}
             </span>
             <span className="block text-xs text-zinc-500">{request.response}</span>
+            <span className="block text-xs text-zinc-500">Model:{request.model}</span>
+            <span className="block text-xs text-zinc-500">Tokens used: {String(request.tokensUsed)}</span>
+            <span className="block text-xs text-zinc-500">Latency: {String(request.latency)}</span>
           </li>
         ))}
       </ul>

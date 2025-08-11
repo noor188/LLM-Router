@@ -8,14 +8,14 @@ export type request = {
   id: number;
   prompt: string;
   response: string;
-  cost: Number;
+  tokensUsed: Number;
   latency: Number;
-  quality: string;
+  model: string;
 };
 
 // Simulated database data
 const MOCK_REQUESTS: request[] = [
-  { id: 1, prompt: "Learn Next.js", response: "Next.js is a React framework...", cost: 0.1, latency: 200, quality: "high" },
+  { id: 1, prompt: "Learn Next.js", response: "Next.js is a React framework...", tokensUsed: 0.1, latency: 200, quality: "high" },
 ];
 
 export async function fetchRequests() {
@@ -39,12 +39,12 @@ export async function fetchRequests() {
 }
 
 
-export async function createRequest(prompt: string, response: string) {
+export async function createRequest(response: request) {
 
   try {
-    logger.info("createRequest - Started creating request", { prompt, response });
+    logger.info("createRequest - Started creating request", { response });
 
-    if (!prompt.trim()) {
+    if (!response.prompt.trim()) {
       logger.warn("createRequest - Empty prompt provided");
       throw new Error("Request prompt cannot be empty");
     }
@@ -55,20 +55,16 @@ export async function createRequest(prompt: string, response: string) {
     // In a real app, this would create a new todo in the database
     const newRequest: request = {
       id: Date.now(),
-      prompt,
-      response: response,
-      cost: 0,
-      latency: 0,
-      quality: "low",
+      prompt: response.prompt,
+      response: response.response,
+      tokensUsed: response.tokensUsed,
+      latency: response.latency,
+      model: response.model,
     };
 
     MOCK_REQUESTS.push(newRequest);
 
-    logger.info("createRequest - Successfully created request", {
-      id: newRequest.id,
-      prompt: newRequest.prompt,
-      response: newRequest.response,
-    });
+    logger.info("createRequest - Successfully created request", { newRequest });
 
     return MOCK_REQUESTS;
   } catch (error) {

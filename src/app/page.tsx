@@ -1,4 +1,3 @@
-import Image from "next/image";
 import { UserPrompt } from "./components/UserPrompt";
 import { fetchRequests } from "./actions/fetchData";
 
